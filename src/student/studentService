@@ -1,0 +1,70 @@
+var studentModel = require('./studentModel');
+var key = '123456789trytrytry';
+var encryptor = require('simple-encryptor')(key);
+
+
+module.exports.createStudentDBService = (studentDetails) => {
+
+
+
+    return new Promise(function myFn(resolve, reject){
+
+
+        var studentModelData = new studentModel();
+
+
+        studentModelData.firstname = studentDetails.firstname;
+        studentModelData.lastname  = studentDetails.lastname;
+        studentModelData.email     = studentDetails.email;
+        studentModelData.password  = studentDetails.password;
+        var encrypted = encryptor.encrypt(studentDetails.password);
+        studentModelData.password = encrypted;
+        
+        studentModelData
+        .save()
+        .then(result => {
+          resolve(true);
+        })
+        .catch(error => {
+          reject(false);
+        });
+    });
+  }; 
+
+  module.exports.createStudentDBService = (studentDetails) => {
+   return new Promise(function myFn(resolve, reject) {
+       var studentModelData = new studentModel();
+       studentModelData.firstname = studentDetails.firstname;
+       studentModelData.lastname = studentDetails.lastname;
+       studentModelData.email = studentDetails.email;
+       studentModelData.password = studentDetails.password;
+       var encrypted = encryptor.encrypt(studentDetails.password);
+       studentModelData.password = encrypted;
+       studentModelData
+           .save()
+           .then(result => {
+               resolve(true);
+           })
+           .catch(error => {
+               reject(false);
+           });
+   });
+};
+
+module.exports.loginuserDBService = async (studentDetails) => {
+   try {
+       const result = await studentModel.findOne({ email: studentDetails.email });
+       if (result) {
+           const decrypted = encryptor.decrypt(result.password);
+           if (decrypted === studentDetails.password) {
+               return { status: true, msg: "Étudiant validé avec succès" };
+           } else {
+               return { status: false, msg: "Validation de l'étudiant échouée" };
+           }
+       } else {
+           return { status: false, msg: "Détails de l'étudiant incorrects" };
+       }
+   } catch (error) {
+       throw new Error("Erreur lors de la validation de l'étudiant");
+   }
+};
